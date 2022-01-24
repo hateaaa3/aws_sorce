@@ -1,0 +1,232 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+# 環境名
+  EnvironmentName:
+    Description: environment name
+    Type: String
+    AllowedValues: 
+      - dev               #開発環境
+      - stg               #ステージング環境
+      - prd               #本番環境
+    Default: dev
+
+# CIDERレンジ
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 192.168.0.0/21
+
+
+Resources:
+###################################
+# VPC作成
+###################################
+  MyVPC1:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:  !Sub ${VpcCIDR}
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-MyVPC1
+
+###################################
+# インターネットゲートウェイ作成
+###################################
+  MyInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Sub ${EnvironmentName}-${AWS::StackName}-MyInternetGateway
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref MyInternetGateway
+      VpcId: !Ref MyVPC1
+
+###################################
+# パブリックサブネット作成1  (ap-northeast-1a  192.168.0.0/24)
+###################################
+  PublicSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: { "Fn::Select" : ["0", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ] } #Default Subnetの0番目指定
+      VpcId: !Ref MyVPC1
+      CidrBlock:  !Select [ 0, !Cidr [ !GetAtt MyVPC1.CidrBlock, 1, 8 ]] #VPCのCidrを頭から8bit分割し、2つ配列した1番目のサブネットマスク指定(0から始まるため数字は-1される)
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-PublicSubnet1a
+
+###################################
+# パブリックサブネット作成2  (ap-northeast-1c  192.168.1.0/24)
+###################################
+  PublicSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: { "Fn::Select" : ["1", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ] } #Default Subnetの1番目指定
+      VpcId: !Ref MyVPC1
+      CidrBlock:  !Select [ 1, !Cidr [ !GetAtt MyVPC1.CidrBlock, 2, 8 ]] #VPCのCidrを頭から8bit分割し、3つ配列した2番目のサブネットマスク指定(0から始まるため数字は-1される)
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-PublicSubnet1c
+
+###################################
+# パブリックサブネット作成3  (ap-northeast-1d  192.168.2.0/24)
+###################################
+  PublicSubnet1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: { "Fn::Select" : ["2", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ] } #Default Subnetの2番目指定
+      VpcId: !Ref MyVPC1
+      CidrBlock:  !Select [ 2, !Cidr [ !GetAtt MyVPC1.CidrBlock, 3, 8 ]] #VPCのCidrを頭から8bit分割し、4つ配列した3番目のサブネットマスク指定(0から始まるため数字は-1される)
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-PublicSubnet1d
+
+###################################
+# プライベートサブネット作成1  (ap-northeast-1a  192.168.3.0/24)
+###################################
+  PrivateSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: { "Fn::Select" : ["0", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ] } #Default Subnetの0番目指定
+      VpcId: !Ref MyVPC1
+      CidrBlock:  !Select [ 3, !Cidr [ !GetAtt MyVPC1.CidrBlock, 4, 8 ]] #VPCのCidrを頭から8bit分割し、5つ配列した4番目のサブネットマスク指定(0から始まるため数字は-1される)
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-PrivateSubnet1a
+
+###################################
+# プライベートサブネット作成2  (ap-northeast-1c  192.168.4.0/24)
+###################################
+  PrivateSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: { "Fn::Select" : ["1", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ] } #Default Subnetの1番目指定
+      VpcId: !Ref MyVPC1
+      CidrBlock:  !Select [ 4, !Cidr [ !GetAtt MyVPC1.CidrBlock, 5, 8 ]] #VPCのCidrを頭から8bit分割し、6つ配列した5番目のサブネットマスク指定(0から始まるため数字は-1される)
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-PrivateSubnet1c
+
+###################################
+# プライベートサブネット作成3  (ap-northeast-1d  192.168.5.0/24)
+###################################
+  PrivateSubnet1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: { "Fn::Select" : ["2", { "Fn::GetAZs" : { "Ref" : "AWS::Region" } } ] } #Default Subnetの2番目指定
+      VpcId: !Ref MyVPC1
+      CidrBlock:  !Select [ 5, !Cidr [ !GetAtt MyVPC1.CidrBlock, 6, 8 ]] #VPCのCidrを頭から8bit分割し、7つ配列した6番目のサブネットマスク指定(0から始まるため数字は-1される)
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-PrivateSubnet1d
+
+###################################
+# ルートテーブル（パブリックサブネット用共通）作成
+###################################
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC1
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-PublicRoutes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGateway
+
+  PublicSubnet1aRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1a
+
+  PublicSubnet1cRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1c
+
+  PublicSubnet1dRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1d
+
+###################################
+# ルートテーブル（プライベートサブネット用共通）作成
+###################################
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC1
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-PrivateRoutes
+
+  PrivateSubnet1aRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet1a
+
+  PrivateSubnet1cRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet1c
+
+  PrivateSubnet1dRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet1d
+
+
+###################################
+# 外部出力
+###################################
+Outputs:
+  MyVPC1:
+    Value: !Ref MyVPC1
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-VpcId
+
+  PublicSubnet1a:
+    Value: !Ref PublicSubnet1a
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-PublicSubnet1a
+
+  PublicSubnet1c:
+    Value: !Ref PublicSubnet1c
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-PublicSubnet1c
+
+  PublicSubnet1d:
+    Value: !Ref PublicSubnet1d
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-PublicSubnet1d
+
+  PrivateSubnet1a:
+    Value: !Ref PrivateSubnet1a
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-PrivateSubnet1a
+
+  PrivateSubnet1c:
+    Value: !Ref PrivateSubnet1c
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-PrivateSubnet1c
+
+  PrivateSubnet1d:
+    Value: !Ref PrivateSubnet1d
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-PrivateSubnet1d
