@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+# 環境名
+  EnvironmentName:
+    Description: environment name
+    Type: String
+    AllowedValues: 
+      - dev               #開発環境
+      - stg               #ステージング環境
+      - prd               #本番環境
+    Default: dev
+
+#VPC作成スタック名
+  VPCstack:
+    Type: String
+    Default: "testCF"
+
+
+Resources:
+###################################
+# セキュリティグループ作成(SSH)
+###################################
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "SSHSecurityGroup"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: '0.0.0.0/0'
+      VpcId: {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${VPCstack}-VpcId"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-SSHSecurityGroup
+
+
+###################################
+# 外部出力
+###################################
+Outputs:
+  SSHSecurityGroup:
+    Value: !Ref SSHSecurityGroup
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-SSHSecurityGroup

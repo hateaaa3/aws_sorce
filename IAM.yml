@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+#CodeDeployを使うのに必要な IAM マネージドポリシー
+  ManagedPolicyParameter1:
+    Type: String
+    Description: 'S3ReadOnlyAccess'
+    Default: "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+
+  ManagedPolicyParameter2:
+    Type: String
+    Description: 'CodeDeployRole'
+    Default: "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+
+
+# 環境名
+  EnvironmentName:
+    Description: environment name
+    Type: String
+    AllowedValues:
+      - dev               #開発環境
+      - stg               #ステージング環境
+      - prd               #本番環境
+    Default: dev
+
+
+Resources:
+###################################
+# IAMロール作成
+###################################
+  iamRoleEC2:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-${AWS::StackName}-iamRoleEC2
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: "/"
+      ManagedPolicyArns:
+        - !Ref ManagedPolicyParameter1
+        - !Ref ManagedPolicyParameter2
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-iamRoleEC2
+
+###################################
+# インスタンスプロファイル作成
+###################################
+  BastionIAMInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      InstanceProfileName: !Sub ${EnvironmentName}-${AWS::StackName}-BastionIAMInstanceProfile
+      Path: "/"
+      Roles:
+        - Ref: iamRoleEC2
+
+
+###################################
+# 外部出力
+###################################
+Outputs:
+  iamRoleEC2:
+    Value: !Ref iamRoleEC2
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-iamRoleEC2
+
+  BastionIAMInstanceProfile:
+    Value: !Ref BastionIAMInstanceProfile
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-BastionIAMInstanceProfile
