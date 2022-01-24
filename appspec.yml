@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/ec2-user/CF
+    destination: /home/ec2-user/CF2
 hooks:
   BeforeInstall:
     - location: scripts/mkdir.sh

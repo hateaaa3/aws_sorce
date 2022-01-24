@@ -1,4 +1,4 @@
 #!/bin/bash
 
 
-mkdir -p /home/ec2-user/CF
+mkdir -p /home/ec2-user/CF2
