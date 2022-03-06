@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+# 環境名
+  EnvironmentName:
+    Description: environment name
+    Type: String
+    AllowedValues: 
+      - dev               #開発環境
+      - stg               #ステージング環境
+      - prd               #本番環境
+    Default: dev
+
+# AMI ID
+  Ec2ImageId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
+# インスタンスタイプ
+  Ec2InstanceType:
+    Type: String
+    Default: t2.micro
+
+#VPC作成スタック名
+  VPCstack:
+    Type: String
+    Default: "testCF"
+
+#SG作成スタック名
+  SGstack:
+    Type: String
+    Default: "testCF-SG"
+
+#IAM作成スタック名
+  IAMstack:
+    Type: String
+    Default: "testCF-IAM"
+
+Resources:
+###################################
+# EC2作成
+###################################
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: taki_asu1
+      ImageId: !Ref Ec2ImageId
+      InstanceType: !Ref Ec2InstanceType
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          SubnetId: {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${VPCstack}-PublicSubnet1c"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
+          GroupSet: 
+            - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-SSHSecurityGroup"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
+      IamInstanceProfile: {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${IAMstack}-BastionIAMInstanceProfile"}} #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-MyEC2Instance2
+
+
+###################################
+# 外部出力
+###################################
+Outputs:
+  MyEC2Instance:
+    Value: !Ref MyEC2Instance
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-MyEC2Instance2
