@@ -64,6 +64,7 @@ Outputs:
     Value: !Ref SSHSecurityGroup
     Export:
       Name: !Sub ${EnvironmentName}-${AWS::StackName}-SSHSecurityGroup
+
   HTTPSecurityGroup:
     Value: !Ref HTTPSecurityGroup
     Export:
