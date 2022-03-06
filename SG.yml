@@ -37,7 +37,7 @@ Resources:
 ###################################
 # セキュリティグループ作成(HTTP/HTTPS)
 ###################################
-  SSHSecurityGroup:
+  HTTPSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: "HTTPSecurityGroup"
