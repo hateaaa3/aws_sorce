@@ -49,10 +49,12 @@ Resources:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
           SubnetId: {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${VPCstack}-PublicSubnet1a"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
-          GroupSet: 
-            - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-SSHSecurityGroup"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
-            - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-HTTPSecurityGroup"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
+#          GroupSet: 
+#            - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-SSHSecurityGroup"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
+#            - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-HTTPSecurityGroup"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
       IamInstanceProfile: {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${IAMstack}-BastionIAMInstanceProfile"}} #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
+      SecurityGroupIds: 
+        - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-SSHSecurityGroup"}}
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-${AWS::StackName}-MyEC2Instance
