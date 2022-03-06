@@ -34,6 +34,27 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName}-${AWS::StackName}-SSHSecurityGroup
 
+###################################
+# セキュリティグループ作成(HTTP/HTTPS)
+###################################
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "HTTPSecurityGroup"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: '0.0.0.0/0'
+      VpcId: {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${VPCstack}-VpcId"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${AWS::StackName}-HTTPSecurityGroup
+
 
 ###################################
 # 外部出力
@@ -43,3 +64,7 @@ Outputs:
     Value: !Ref SSHSecurityGroup
     Export:
       Name: !Sub ${EnvironmentName}-${AWS::StackName}-SSHSecurityGroup
+  HTTPSecurityGroup:
+    Value: !Ref HTTPSecurityGroup
+    Export:
+      Name: !Sub ${EnvironmentName}-${AWS::StackName}-HTTPSecurityGroup
