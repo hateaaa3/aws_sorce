@@ -45,6 +45,8 @@ Resources:
       KeyName: taki_asu1
       ImageId: !Ref Ec2ImageId
       InstanceType: !Ref Ec2InstanceType
+      SecurityGroupIds: 
+        - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-SSHSecurityGroup"}}
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
@@ -53,8 +55,6 @@ Resources:
 #            - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-SSHSecurityGroup"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
 #            - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-HTTPSecurityGroup"}}  #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
       IamInstanceProfile: {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${IAMstack}-BastionIAMInstanceProfile"}} #ImportValueでSubの短縮系が使えないため、この記述。https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html
-      SecurityGroupIds: 
-        - {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-${SGstack}-SSHSecurityGroup"}}
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-${AWS::StackName}-MyEC2Instance
